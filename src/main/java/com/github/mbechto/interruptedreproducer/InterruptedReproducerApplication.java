@@ -4,6 +4,7 @@ import static org.axonframework.modelling.command.AggregateCreationPolicy.CREATE
 import static org.axonframework.modelling.command.AggregateLifecycle.apply;
 
 import java.time.Duration;
+import java.util.stream.IntStream;
 import org.axonframework.commandhandling.CommandHandler;
 import org.axonframework.commandhandling.gateway.CommandGateway;
 import org.axonframework.config.ConfigurerModule;
@@ -34,7 +35,11 @@ public class InterruptedReproducerApplication {
   public static void main(String[] args) throws InterruptedException {
     var ctx = SpringApplication.run(InterruptedReproducerApplication.class, args);
     var eventGateway = ctx.getBean(EventGateway.class);
-    eventGateway.publish(new MyEvent("0", true), new MyEvent("1", false));
+    IntStream.range(0, 10)
+        .forEach(i -> eventGateway.publish(new MyEvent(String.valueOf(i), false)));
+    eventGateway.publish(new MyEvent("10", true));
+    IntStream.range(11, 100)
+        .forEach(i -> eventGateway.publish(new MyEvent(String.valueOf(i), false)));
     var config = ctx.getBean(EventProcessingConfiguration.class);
 
     long size = 0;
