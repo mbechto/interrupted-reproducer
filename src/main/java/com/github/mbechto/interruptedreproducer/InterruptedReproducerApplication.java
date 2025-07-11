@@ -44,10 +44,12 @@ public class InterruptedReproducerApplication {
 
     long size = 0;
     while (!Thread.currentThread().isInterrupted()) {
-      long newSize = config.deadLetterQueue("mypg").orElseThrow().amountOfSequences();
+      var dlq = config.deadLetterQueue("mypg").orElseThrow();
+      long newSize = dlq.amountOfSequences();
       if (newSize != size) {
         size = newSize;
         System.out.println("--> dlq size: " + size);
+        dlq.deadLetters().forEach(seq -> seq.forEach(System.out::println));
       }
       Thread.sleep(2000);
     }
